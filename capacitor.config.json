@@ -1,0 +1,6 @@
+{
+  "appId": "com.ebada.tracker",
+  "appName": "متابعة العبادات والأخلاق",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}

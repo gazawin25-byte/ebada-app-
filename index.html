@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#176b52">
+<title>متابعة العبادات والأخلاق</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;color:#17352b;background:#f3f7f4}
+*{box-sizing:border-box}body{margin:0;padding:0 0 28px}
+header{background:linear-gradient(135deg,#176b52,#27866a);color:#fff;padding:24px 18px 20px;border-radius:0 0 24px 24px}
+h1{font-size:23px;margin:0 0 7px}header p{margin:0;opacity:.9;font-size:14px}
+main{max-width:720px;margin:auto;padding:14px}
+.panel{background:#fff;border-radius:18px;padding:16px;margin:0 0 14px;box-shadow:0 3px 14px #17352b0b}
+h2{font-size:18px;margin:0 0 12px;color:#176b52}
+label{font-size:14px;font-weight:600}
+input,select,button{font:inherit}
+input[type=date],input[type=text],select{width:100%;padding:11px;border:1px solid #d5e2da;border-radius:11px;background:#fff;color:#17352b;margin-top:6px}
+button{border:0;border-radius:11px;padding:10px 14px;background:#176b52;color:#fff;font-weight:700;cursor:pointer}
+button.secondary{background:#e6f2eb;color:#176b52}
+button.danger{background:#fff0ed;color:#a33d2d}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:#eef7f1;border-radius:13px;padding:12px;text-align:center}.stat strong{display:block;font-size:23px;color:#176b52}.stat span{font-size:12px}
+.progress{height:9px;background:#e3ece6;border-radius:20px;overflow:hidden;margin-top:10px}.progress div{height:100%;background:#36a879;width:0;transition:width .2s}
+.day-title{font-weight:800;margin-bottom:9px}.habit{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #edf1ee}.habit:first-of-type{border-top:0}
+.habit input{width:22px;height:22px;accent-color:#176b52;flex-shrink:0}.habit label{font-weight:500;flex:1}.small{font-size:12px;color:#678075}
+.day-card{border:1px solid #e1ebe4;border-radius:14px;padding:12px;margin-bottom:10px}
+.day-card.done{background:#f1faf4;border-color:#b9dfc8}
+.day-head{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.actions button{flex:1}
+#habitList .habit{padding:7px 0}.remove{padding:5px 9px;font-size:12px}
+footer{text-align:center;color:#7b9185;font-size:12px;padding:8px}
+@media(min-width:600px){.days-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.day-card{margin:0}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🌿 متابعة العبادات والأخلاق</h1>
+  <p>خطوة صغيرة كل يوم، وأثر جميل بإذن الله</p>
+</header>
+<main>
+  <section class="panel">
+    <h2>📅 الشهر الحالي</h2>
+    <label for="startDate">تاريخ بداية المتابعة</label>
+    <input type="date" id="startDate">
+    <p class="small">المتابعة تشمل 30 يومًا من التاريخ المحدد، وبياناتك محفوظة على هذا الجهاز.</p>
+  </section>
+  <section class="panel">
+    <h2>📊 ملخص الشهر</h2>
+    <div class="stats">
+      <div class="stat"><strong id="doneCount">0</strong><span>إنجازات اليوم</span></div>
+      <div class="stat"><strong id="monthCount">0%</strong><span>نسبة الشهر</span></div>
+      <div class="stat"><strong id="streak">0</strong><span>أيام مكتملة</span></div>
+    </div>
+    <div class="progress"><div id="monthProgress"></div></div>
+  </section>
+  <section class="panel">
+    <h2>✨ العبادات والأخلاق</h2>
+    <div id="habitList"></div>
+    <div class="row" style="margin-top:10px">
+      <input id="newHabit" type="text" placeholder="أضف عبادة أو خُلُقًا جديدًا">
+      <button id="addHabit">إضافة</button>
+    </div>
+  </section>
+  <section class="panel">
+    <h2>🗓️ متابعة 30 يومًا</h2>
+    <div class="small" style="margin-bottom:12px">اضغط على المربع بجوار كل بند لتسجيل إنجازه في اليوم المحدد.</div>
+    <div id="days" class="days-grid"></div>
+  </section>
+  <section class="panel">
+    <h2>💾 إدارة البيانات</h2>
+    <div class="actions">
+      <button class="secondary" id="exportBtn">تصدير نسخة احتياطية</button>
+      <button class="danger" id="resetBtn">مسح كل البيانات</button>
+    </div>
+    <input id="importFile" type="file" accept="application/json,.json" style="display:none">
+    <button class="secondary" id="importBtn" style="width:100%;margin-top:8px">استيراد نسخة احتياطية</button>
+  </section>
+</main>
+<footer>اللهم أعنّا على ذكرك وشكرك وحسن عبادتك 🤍</footer>
+<script>
+const KEY='ebada_tracker_v1';
+const defaults=['الصلاة في وقتها','أذكار الصباح والمساء','قراءة القرآن','صلاة الوتر','الاستغفار','بر الوالدين','الكلمة الطيبة','الصدقة أو مساعدة الآخرين'];
+const $=id=>document.getElementById(id);
+const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||null}catch(e){return null}}
+let data=load()||{start:today(),habits:defaults,checks:{}};
+function save(){localStorage.setItem(KEY,JSON.stringify(data));render()}
+function dayKey(i){const d=new Date(data.start+'T12:00:00');d.setDate(d.getDate()+i);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function fmt(s){return new Date(s+'T12:00:00').toLocaleDateString('ar-EG',{weekday:'short',day:'numeric',month:'short'})}
+function renderHabits(){
+ $('habitList').innerHTML='';
+ data.habits.forEach((h,i)=>{const div=document.createElement('div');div.className='habit';
+ const name=document.createElement('span');name.textContent=h;name.style.flex='1';
+ const b=document.createElement('button');b.className='danger remove';b.textContent='حذف';b.onclick=()=>{if(confirm('حذف هذا البند من القائمة؟')){data.habits.splice(i,1);Object.values(data.checks).forEach(a=>{if(a)a.splice(i,1)});save()}};
+ div.append(name,b);$('habitList').append(div)});
+}
+function renderDays(){
+ $('days').innerHTML='';
+ for(let i=0;i<30;i++){const key=dayKey(i);const vals=data.checks[key]||[];const complete=data.habits.length>0&&data.habits.every((_,j)=>!!vals[j]);
+ const card=document.createElement('div');card.className='day-card'+(complete?' done':'');
+ const head=document.createElement('div');head.className='day-head';
+ const title=document.createElement('div');title.innerHTML=`<div class="day-title">اليوم ${i+1}</div><div class="small">${fmt(key)}</div>`;
+ const badge=document.createElement('span');badge.className='small';badge.textContent=complete?'مكتمل ✓':`${vals.filter(Boolean).length}/${data.habits.length}`;
+ head.append(title,badge);card.append(head);
+ data.habits.forEach((h,j)=>{const line=document.createElement('div');line.className='habit';const cb=document.createElement('input');cb.type='checkbox';cb.checked=!!vals[j];cb.id=`c-${i}-${j}`;
+ cb.onchange=()=>{if(!data.checks[key])data.checks[key]=[];data.checks[key][j]=cb.checked;save()};
+ const lab=document.createElement('label');lab.htmlFor=cb.id;lab.textContent=h;line.append(cb,lab);card.append(line)});
+ $('days').append(card)}
+}
+function renderStats(){
+ const key=today(), vals=data.checks[key]||[];$('doneCount').textContent=vals.filter(Boolean).length;
+ let total=0,done=0,completedDays=0;
+ for(let i=0;i<30;i++){const a=data.checks[dayKey(i)]||[];total+=data.habits.length;done+=data.habits.filter((_,j)=>!!a[j]).length;if(data.habits.length&&data.habits.every((_,j)=>!!a[j]))completedDays++}
+ const pct=total?Math.round(done/total*100):0;$('monthCount').textContent=pct+'%';$('streak').textContent=completedDays;$('monthProgress').style.width=pct+'%';
+}
+function render(){if($('startDate').value!==data.start)$('startDate').value=data.start;renderHabits();renderDays();renderStats()}
+$('startDate').value=data.start;
+$('startDate').addEventListener('change',e=>{if(e.target.value){data.start=e.target.value;save()}});
+$('addHabit').onclick=()=>{const v=$('newHabit').value.trim();if(!v)return;if(data.habits.includes(v)){alert('هذا البند موجود بالفعل');return}data.habits.push(v);$('newHabit').value='';save()};
+$('newHabit').addEventListener('keydown',e=>{if(e.key==='Enter')$('addHabit').click()});
+$('resetBtn').onclick=()=>{if(confirm('هل أنت متأكد من مسح كل بيانات المتابعة؟ لا يمكن التراجع عن هذا الإجراء.')){data={start:today(),habits:defaults.slice(),checks:{}};save()}};
+$('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='ebada-backup.json';a.click();URL.revokeObjectURL(url)};
+$('importBtn').onclick=()=>$('importFile').click();
+$('importFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const imported=JSON.parse(await f.text());if(!imported.start||!Array.isArray(imported.habits)||!imported.checks)throw new Error();data=imported;save();alert('تم استيراد النسخة الاحتياطية')}catch(err){alert('الملف غير صالح')}e.target.value=''};
+render();
+</script>
+</body>
+</html>
