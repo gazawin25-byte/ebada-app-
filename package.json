@@ -3,8 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "description": "Arabic worship and character tracker Android app",
-  "scripts": {
-    "build": "echo Static app ready"
+  
+"scripts": {
+  "build": "test -f www/index.html && echo 'Web assets ready'"
+},
+
   },
   "dependencies": {
     "@capacitor/android": "^7.4.3",
